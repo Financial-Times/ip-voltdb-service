@@ -8,6 +8,7 @@ function int(str) {
 }
 
 config.NODE_ENV = process.env.NODE_ENV || 'development';
+config.port = int(process.env.PORT) || 3000;
 config.logLevel = process.env.LOG_LEVEL || 'info';
 
 // VoltDB

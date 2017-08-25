@@ -1,14 +1,8 @@
-require('dotenv').config({ silent: true });
-
 const VoltClient = require('voltjs/lib/client');
 const VoltConstants = require('voltjs/lib/voltconstants');
-const VoltProcedure = require('voltjs/lib/query');
 const VoltConfiguration = require('voltjs/lib/configuration');
 const config = require('./config');
 const logger = require('./logger');
-
-const deviceInfoProc = new VoltProcedure('DeviceInfo', ['string', 'int']);
-const query = deviceInfoProc.getQuery();
 
 function getVoltConfig() {
   const conf = new VoltConfiguration();
