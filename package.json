@@ -1,0 +1,35 @@
+{
+  "name": "ip-voltdb-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "voltdb.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Financial-Times/ip-voltdb-service.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Financial-Times/ip-voltdb-service/issues"
+  },
+  "homepage": "https://github.com/Financial-Times/ip-voltdb-service#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.4",
+    "voltjs": "github:financial-times/voltdb-client-nodejs",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.4.1",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-import": "^2.7.0",
+    "jest": "^20.0.4"
+  },
+  "engines": {
+    "node": "^8.1.4"
+  }
+}
