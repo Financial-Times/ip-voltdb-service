@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const config = require('./config');
 const logger = require('./logger');
 const db = require('./voltdb');
+console.log(db);
 
 const app = new Express();
 
@@ -14,6 +15,7 @@ app.post('/query', (req, res, next) => {
 });
 
 db.once('open', () => {
+console.log(db);
   app.listen(config.port, () => logger.info('listening on 3000'));
 });
 
