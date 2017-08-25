@@ -8,7 +8,6 @@ const logger = require('./logger');
 const deviceInfoProc = new VoltProcedure('getUserPreferences', ['string']);
 const pingProc = new VoltProcedure('@Ping', []);
 
-
 function getVoltConfig() {
   const conf = new VoltConfiguration();
   conf.host = config.voltHost;
@@ -78,10 +77,15 @@ module.exports = {
   callProcedure(params = []) {
     const query = deviceInfoProc.getQuery();
     query.setParameters(params);
-    return new Promise((resolve) => {
-      client.callProcedure(query, (code, event, results) => {
-        return resolve(results);
-      });
+    return new Promise((resolve, reject) => {
+      // callProcedure throws synchronous error if params are invalid
+      try {
+        client.callProcedure(query, (code, event, results) => {
+          resolve(results);
+        });
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 };

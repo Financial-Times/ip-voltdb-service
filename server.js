@@ -16,9 +16,9 @@ app.post('/query', async (req, res) => {
     data = await voltClient.callProcedure(params);
   } catch (err) {
     logger.error(err);
-    res.send(500);
+    res.status(400).json({ message: err.message });
   }
-  res.json(data);
+  res.json(data.table);
 });
 
 app.listen(config.port, () => logger.info(`listening on ${config.port}`));
