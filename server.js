@@ -4,19 +4,22 @@ const Express = require('express');
 const bodyParser = require('body-parser');
 const config = require('./config');
 const logger = require('./logger');
-const db = require('./voltdb');
-console.log(db);
+const voltClient = require('./voltdb');
 
 const app = new Express();
 
 app.use(bodyParser.json({}));
-app.post('/query', (req, res, next) => {
-  res.send('OK');
+app.post('/query', async (req, res) => {
+  const params = req.body.params;
+  let data;
+  try {
+    data = await voltClient.callProcedure(params);
+  } catch (err) {
+    logger.error(err);
+    res.send(500);
+  }
+  res.json(data);
 });
 
-db.once('open', () => {
-console.log(db);
-  app.listen(config.port, () => logger.info('listening on 3000'));
-});
+app.listen(config.port, () => logger.info(`listening on ${config.port}`));
 
-db.openConnection();
