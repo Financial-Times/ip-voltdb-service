@@ -53,9 +53,8 @@ function doConnection() {
   client.on(VoltConstants.SESSION_EVENT.FATAL_ERROR, connectionHandler);
   client.connect((code, event) => {
     const statusCode = code ? VoltConstants.STATUS_CODE_STRINGS[code] : 'SUCCESS';
-    logger.info(`Volt connection event=${event} status=${statusCode}`);
     if (statusCode === 'SUCCESS') {
-      console.log(client._connections.length);
+      logger.info(`Volt connection event=${event} status=${statusCode}`);
       clearInterval(pingInterval);
       pingInterval = setInterval(sendPing, pingTime);
     } else {
@@ -67,6 +66,7 @@ function doConnection() {
 doConnection();
 
 module.exports = {
+  client,
   callProcedure(params = []) {
     const query = deviceInfoProc.getQuery();
     query.setParameters(params);
