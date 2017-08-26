@@ -56,6 +56,7 @@ function doConnection() {
       logger.info(`Volt connection event=${event} status=${statusCode}`);
       clearInterval(pingInterval);
       pingInterval = setInterval(sendPing, pingTime);
+      client.emit('open');
     } else {
       client.emit('error');
     }
