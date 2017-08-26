@@ -5,9 +5,10 @@ const bodyParser = require('body-parser');
 const config = require('./config');
 const logger = require('./logger');
 const voltClient = require('./voltdb');
+const operations = require('./operations')(voltClient);
 
 const app = new Express();
-voltClient.client.on('error', (err) => {
+voltClient.on('error', (err) => {
   logger.error(`Error with volt connection: ${err}`);
   process.exit(1);
 });
@@ -27,7 +28,8 @@ app.post('/query', async (req, res) => {
   const params = req.body.params;
   let data;
   try {
-    data = await voltClient.callProcedure(params);
+    //data = await voltClient.callProcedure(params);
+    data = await operations.callAdhoc();
   } catch (err) {
     logger.error(err);
     res.status(400).json({ message: err.message });

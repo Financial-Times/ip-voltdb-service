@@ -5,7 +5,6 @@ const VoltProcedure = require('voltjs/lib/query');
 const config = require('./config');
 const logger = require('./logger');
 
-const deviceInfoProc = new VoltProcedure('getUserPreferences', ['string']);
 const pingProc = new VoltProcedure('@Ping', []);
 
 function getVoltConfig() {
@@ -65,20 +64,4 @@ function doConnection() {
 
 doConnection();
 
-module.exports = {
-  client,
-  callProcedure(params = []) {
-    const query = deviceInfoProc.getQuery();
-    query.setParameters(params);
-    return new Promise((resolve, reject) => {
-      // callProcedure throws synchronous error if params are invalid
-      try {
-        client.callProcedure(query, (code, event, results) => {
-          resolve(results);
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-};
+module.exports = client;
