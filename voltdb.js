@@ -19,17 +19,14 @@ function getVoltConfig() {
   conf.queryTimeout = 100;
   conf.queryTimeoutInterval = 1000;
   conf.flushInterval = 10;
-  conf.reconnect = false;
+  conf.reconnect = true;
+  conf.reconnectInterval = 1000;
   return conf;
 }
 
 const pingTime = 2000;
-const reconnectTime = 1000;
-const maxReconnectTime = 512000;
 const connections = [...Array(3)].map(getVoltConfig);
-let reconnectCount = 0;
 let pingInterval;
-let connectTimeout;
 let client;
 
 const sendPing = () => {
@@ -40,23 +37,9 @@ const sendPing = () => {
 };
 
 const connectionHandler = (code, event) => {
-  const statusCode = code ? VoltConstants.STATUS_CODE_STRINGS[code] : 'SUCCESS';
-  logger.info(`Volt connection event=${event} status=${statusCode}`);
-  if (statusCode === 'SUCCESS') {
-    clearTimeout(connectTimeout);
-    pingInterval = setInterval(sendPing, pingTime);
-    reconnectCount = 0;
-  }
+  const statusCode = VoltConstants.STATUS_CODE_STRINGS[code];
   if (statusCode === 'UNEXPECTED_FAILURE') {
-    clearInterval(pingInterval);
-    client.removeAllListeners();
-    let wait = (Math.pow(2, reconnectCount) * reconnectTime);
-    if (wait >= maxReconnectTime) {
-      wait = maxReconnectTime;
-    }
-    logger.info(`Volt backing off connection for ${wait} ms`);
-    connectTimeout = setTimeout(doConnection, wait + Math.floor(Math.random() * 1000));
-    reconnectCount++;
+    logger.error(`${statusCode} for event: ${event}`);
   }
 };
 
@@ -68,7 +51,17 @@ function doConnection() {
   client.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.FATAL_ERROR, connectionHandler);
-  client.connect(() => {});
+  client.connect((code, event) => {
+    const statusCode = code ? VoltConstants.STATUS_CODE_STRINGS[code] : 'SUCCESS';
+    logger.info(`Volt connection event=${event} status=${statusCode}`);
+    if (statusCode === 'SUCCESS') {
+      console.log(client._connections.length);
+      clearInterval(pingInterval);
+      pingInterval = setInterval(sendPing, pingTime);
+    } else {
+      client.emit('error');
+    }
+  });
 }
 
 doConnection();
