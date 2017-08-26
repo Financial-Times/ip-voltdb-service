@@ -4,7 +4,7 @@ const userPreferencesProc = new VoltProcedure('getUserPreferences', ['string']);
 const adhocProc = new VoltProcedure('@AdHoc', ['string']);
 const listProcedures = new VoltProcedure('@SystemCatalog', ['string']);
 
-let availableProcs;
+const availableProcs = new Map();
 
 module.exports = (client) => {
 
@@ -25,8 +25,15 @@ module.exports = (client) => {
     const procedureQuery = listProcedures.getQuery();
     procedureQuery.setParameters(['procedures']);
     const procs = await execProc(procedureQuery);
-    console.log(procs.table[0][0]);
-
+    procs.table[0].forEach((proc) => {
+      const remarks = JSON.parse(proc.REMARKS);
+      // only use read only, single key, user defined procedures
+      if (remarks.readOnly && remarks.partitionParameter === 0 && remarks.singlePartition &&
+        !proc.PROCEDURE_NAME.includes('.select')) {
+        availableProcs.set(proc.PROCEDURE_NAME, new VoltProcedure(proc.PROCEDURE_NAME, ['string']));
+      }
+    });
+    // TODO EXEC @SystemCatalog PROCEDURECOLUMNS to get params and only allow single params for now
   });
 
   return {
@@ -37,10 +44,14 @@ module.exports = (client) => {
       return execProc(query);
     },
 
-    callProcedure(params = []) {
-      const query = userPreferencesProc.getQuery();
-      query.setParameters(params);
-      return execProc(query);
+    callProcedure(proc, params = []) {
+      const foundProc = availableProcs.get(proc);
+      if (foundProc) {
+        const query = foundProc.getQuery();
+        query.setParameters(params);
+        return execProc(query);
+      }
+      return Promise.reject(new Error('Query not available'));
     }
   };
 };

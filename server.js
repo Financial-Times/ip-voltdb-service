@@ -19,21 +19,22 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-process.on('uncaughtRejection', (err) => {
-  logger.error(`Uncaught Rejection: ${err}`);
+process.on('unhandledRejection', (err) => {
+  logger.error(`Unhandled Rejection: ${err}`);
   process.exit(1);
 });
 
 app.use(bodyParser.json({}));
 app.post('/query', async (req, res) => {
+  const proc = req.body.proc;
   const params = req.body.params;
   let data;
   try {
-    data = await operations.callProcedure(params);
+    data = await operations.callProcedure(proc, params);
     //data = await operations.callAdhoc();
   } catch (err) {
     logger.error(err);
-    res.status(400).json({ message: err.message });
+    return res.status(400).json({ message: err.message });
   }
   res.json(data.table);
 });
