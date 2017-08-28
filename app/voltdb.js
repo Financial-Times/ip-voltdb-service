@@ -2,10 +2,9 @@ const VoltClient = require('voltjs/lib/client');
 const VoltConstants = require('voltjs/lib/voltconstants');
 const VoltConfiguration = require('voltjs/lib/configuration');
 const VoltProcedure = require('voltjs/lib/query');
-const config = require('./config');
+const config = require('../config');
 const logger = require('./logger');
 
-const deviceInfoProc = new VoltProcedure('getUserPreferences', ['string']);
 const pingProc = new VoltProcedure('@Ping', []);
 
 function getVoltConfig() {
@@ -19,18 +18,15 @@ function getVoltConfig() {
   conf.queryTimeout = 100;
   conf.queryTimeoutInterval = 1000;
   conf.flushInterval = 10;
-  conf.reconnect = false;
+  conf.reconnect = true;
+  conf.reconnectInterval = 1000;
   return conf;
 }
 
 const pingTime = 2000;
-const reconnectTime = 1000;
-const maxReconnectTime = 512000;
 const connections = [...Array(3)].map(getVoltConfig);
-let reconnectCount = 0;
+const client = new VoltClient(connections);
 let pingInterval;
-let connectTimeout;
-let client;
 
 const sendPing = () => {
   const query = pingProc.getQuery();
@@ -40,52 +36,33 @@ const sendPing = () => {
 };
 
 const connectionHandler = (code, event) => {
-  const statusCode = code ? VoltConstants.STATUS_CODE_STRINGS[code] : 'SUCCESS';
-  logger.info(`Volt connection event=${event} status=${statusCode}`);
-  if (statusCode === 'SUCCESS') {
-    clearTimeout(connectTimeout);
-    pingInterval = setInterval(sendPing, pingTime);
-    reconnectCount = 0;
-  }
+  const statusCode = VoltConstants.STATUS_CODE_STRINGS[code];
   if (statusCode === 'UNEXPECTED_FAILURE') {
-    clearInterval(pingInterval);
-    client.removeAllListeners();
-    let wait = (Math.pow(2, reconnectCount) * reconnectTime);
-    if (wait >= maxReconnectTime) {
-      wait = maxReconnectTime;
-    }
-    logger.info(`Volt backing off connection for ${wait} ms`);
-    connectTimeout = setTimeout(doConnection, wait + Math.floor(Math.random() * 1000));
-    reconnectCount++;
+    logger.error(`${statusCode} for event: ${event}`);
   }
 };
 
 function doConnection() {
-  client = new VoltClient(connections);
 
   client.on(VoltConstants.SESSION_EVENT.CONNECTION, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.CONNECTION_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.FATAL_ERROR, connectionHandler);
-  client.connect(() => {});
+  client.connect((code, event) => {
+    const statusCode = code ? VoltConstants.STATUS_CODE_STRINGS[code] : 'SUCCESS';
+    if (statusCode === 'SUCCESS') {
+      logger.info(`Volt connection event=${event} status=${statusCode}`);
+      clearInterval(pingInterval);
+      pingInterval = setInterval(sendPing, pingTime);
+      client.emit('open');
+    } else {
+      client.emit('error');
+    }
+  });
 }
 
-doConnection();
-
 module.exports = {
-  callProcedure(params = []) {
-    const query = deviceInfoProc.getQuery();
-    query.setParameters(params);
-    return new Promise((resolve, reject) => {
-      // callProcedure throws synchronous error if params are invalid
-      try {
-        client.callProcedure(query, (code, event, results) => {
-          resolve(results);
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
+  client,
+  doConnection
 };
