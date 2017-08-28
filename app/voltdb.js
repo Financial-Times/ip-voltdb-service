@@ -25,8 +25,8 @@ function getVoltConfig() {
 
 const pingTime = 2000;
 const connections = [...Array(3)].map(getVoltConfig);
+const client = new VoltClient(connections);
 let pingInterval;
-let client;
 
 const sendPing = () => {
   const query = pingProc.getQuery();
@@ -43,7 +43,6 @@ const connectionHandler = (code, event) => {
 };
 
 function doConnection() {
-  client = new VoltClient(connections);
 
   client.on(VoltConstants.SESSION_EVENT.CONNECTION, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.CONNECTION_ERROR, connectionHandler);
@@ -63,6 +62,7 @@ function doConnection() {
   });
 }
 
-doConnection();
-
-module.exports = client;
+module.exports = {
+  client,
+  doConnection
+};

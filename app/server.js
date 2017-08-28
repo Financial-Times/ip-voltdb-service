@@ -6,8 +6,8 @@ const config = require('../config');
 const logger = require('./logger');
 const authenticate = require('./middleware/authenticate');
 const { notFound, errorHandler } = require('./middleware/errors');
-const voltClient = require('./voltdb');
-const operations = require('./operations/api')(voltClient);
+const { client, doConnection } = require('./voltdb');
+const operations = require('./operations/api')(client);
 
 const app = new Express();
 let server;
@@ -46,8 +46,6 @@ function gracefulExit(err) {
   process.on('SIGINT', immediateExit);
 }
 
-voltClient.on('error', gracefulExit);
-
 process.on('uncaughtException', gracefulExit);
 process.on('unhandledRejection', gracefulExit);
 process.once('SIGINT', gracefulExit); // CTRL-C in terminal
@@ -78,4 +76,15 @@ app.post('/executions', async (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-server = app.listen(config.port, () => logger.info(`listening on ${config.port}`));
+client.on('error', gracefulExit);
+client.once('open', () => {
+  server = app.listen(config.port, (serverErr) => {
+    if (serverErr) {
+      logger.error('Error binding network socket. Exiting');
+      process.exit(1);
+    }
+    logger.info(`Server listening on ${config.port}`);
+  });
+});
+
+doConnection();
