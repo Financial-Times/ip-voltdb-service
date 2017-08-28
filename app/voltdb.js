@@ -2,7 +2,7 @@ const VoltClient = require('voltjs/lib/client');
 const VoltConstants = require('voltjs/lib/voltconstants');
 const VoltConfiguration = require('voltjs/lib/configuration');
 const VoltProcedure = require('voltjs/lib/query');
-const config = require('./config');
+const config = require('../config');
 const logger = require('./logger');
 
 const pingProc = new VoltProcedure('@Ping', []);

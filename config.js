@@ -16,3 +16,6 @@ config.voltHost = process.env.VOLT_HOST || 'spoor-voltdb.in.ft.com';
 config.voltPort = int(process.env.VOLT_PORT) || 21212;
 config.voltUser = process.env.VOLT_USER || 'developer';
 config.voltPassword = process.env.VOLT_PASSWORD;
+
+// Security
+config.apiKey = process.env.API_KEY || 'development';
