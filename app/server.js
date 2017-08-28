@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const config = require('../config');
 const logger = require('./logger');
 const authenticate = require('./middleware/authenticate');
+const ensureHttps = require('./middleware/ensureHttps');
 const { notFound, errorHandler } = require('./middleware/errors');
 const { client, doConnection } = require('./voltdb');
 const operations = require('./operations/api')(client);
@@ -51,6 +52,9 @@ process.on('unhandledRejection', gracefulExit);
 process.once('SIGINT', gracefulExit); // CTRL-C in terminal
 process.on('SIGTERM', gracefulExit); // Heroku
 
+if (config.NODE_ENV === 'prodcution') {
+  app.use(ensureHttps);
+}
 app.use(authenticate);
 app.use(bodyParser.json({}));
 
