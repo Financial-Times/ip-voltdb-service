@@ -52,7 +52,7 @@ process.on('unhandledRejection', gracefulExit);
 process.once('SIGINT', gracefulExit); // CTRL-C in terminal
 process.on('SIGTERM', gracefulExit); // Heroku
 
-if (config.NODE_ENV === 'prodcution') {
+if (config.NODE_ENV === 'production') {
   app.use(ensureHttps);
 }
 app.use(authenticate);
