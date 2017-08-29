@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Financial-Times/ip-voltdb-service#readme",
   "dependencies": {
     "body-parser": "^1.17.2",
+    "compression": "^1.7.0",
     "dotenv": "^4.0.0",
     "express": "^4.15.4",
     "voltjs": "github:snozza/voltdb-client-nodejs",

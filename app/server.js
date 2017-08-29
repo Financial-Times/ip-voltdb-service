@@ -1,15 +1,10 @@
 require('dotenv').config({ silent: true });
 
-const Express = require('express');
 const config = require('../config');
 const logger = require('./logger');
-const authenticate = require('./middleware/authenticate');
-const ensureHttps = require('./middleware/ensureHttps');
-const { notFound, errorHandler } = require('./middleware/errors');
+const app = require('./');
 const { client, doConnection } = require('./db/voltdb');
-const queries = require('./queries/api');
 
-const app = new Express();
 let server;
 
 function immediateExit() {
@@ -50,15 +45,6 @@ process.on('uncaughtException', gracefulExit);
 process.on('unhandledRejection', gracefulExit);
 process.once('SIGINT', gracefulExit); // CTRL-C in terminal
 process.on('SIGTERM', gracefulExit); // Heroku
-
-if (config.NODE_ENV === 'production') {
-  app.use(ensureHttps);
-}
-app.use(authenticate);
-app.use('/api', queries(client));
-
-app.use(notFound);
-app.use(errorHandler);
 
 client.on('error', gracefulExit);
 client.once('open', async () => {
