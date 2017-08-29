@@ -81,7 +81,8 @@ app.use(notFound);
 app.use(errorHandler);
 
 client.on('error', gracefulExit);
-client.once('open', () => {
+client.once('open', async () => {
+  await operations.init();
   server = app.listen(config.port, (serverErr) => {
     if (serverErr) {
       logger.error('Error binding network socket. Exiting');

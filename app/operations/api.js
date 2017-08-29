@@ -35,9 +35,10 @@ module.exports = (client) => {
         availableProcs.set(proc.PROCEDURE_NAME, new VoltProcedure(proc.PROCEDURE_NAME, ['string']));
       }
     });
+    return availableProcs;
   }
 
-  client.once('open', async () => {
+  async function init() {
     // Retrieve valid procedure information
     const procQuery = systemCatalogProc.getQuery();
     const procColumnsQuery = systemCatalogProc.getQuery();
@@ -49,9 +50,13 @@ module.exports = (client) => {
 
 
     // TODO Get more information on proc inputs
-  });
+  }
 
   return {
+    init,
+    execProc,
+    selectAvailableProcs,
+
     getAvailableProcs() {
       return [...availableProcs.keys()];
     },
