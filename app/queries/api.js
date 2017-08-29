@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const bodyParser = require('body-parser');
 const operationsAPI = require('./operations/api');
+const parseJSON = require('../utils/parseJSON');
 
 module.exports = (client) => {
   const operations = operationsAPI(client);
@@ -21,7 +22,7 @@ module.exports = (client) => {
       res.status(400).json({ message: err.message });
       return;
     }
-    res.json(data.table);
+    res.json(parseJSON(data.table[0]));
   });
 
   return router;
