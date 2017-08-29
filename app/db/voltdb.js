@@ -1,9 +1,9 @@
-const VoltClient = require('voltjs/lib/client');
 const VoltConstants = require('voltjs/lib/voltconstants');
 const VoltConfiguration = require('voltjs/lib/configuration');
 const VoltProcedure = require('voltjs/lib/query');
-const config = require('../config');
-const logger = require('./logger');
+const Client = require('./Client');
+const config = require('../../config');
+const logger = require('../logger');
 
 const pingProc = new VoltProcedure('@Ping', []);
 
@@ -25,15 +25,8 @@ function getVoltConfig() {
 
 const pingTime = 2000;
 const connections = [...Array(3)].map(getVoltConfig);
-const client = new VoltClient(connections);
+const client = new Client(connections);
 let pingInterval;
-
-const sendPing = () => {
-  const query = pingProc.getQuery();
-  client.callProcedure(query, (code, event) => {
-    logger.debug(`Pinged DB and received code: ${code} with event: ${event}`);
-  });
-};
 
 const connectionHandler = (code, event) => {
   const statusCode = VoltConstants.STATUS_CODE_STRINGS[code];
@@ -42,19 +35,25 @@ const connectionHandler = (code, event) => {
   }
 };
 
-function doConnection() {
+async function sendPing() {
+  const query = pingProc.getQuery();
+  const pingRes = await client.execProc(query);
+  logger.debug(`Pinged DB and received: ${JSON.stringify(pingRes)}`);
+}
 
+function doConnection() {
   client.on(VoltConstants.SESSION_EVENT.CONNECTION, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.CONNECTION_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR, connectionHandler);
   client.on(VoltConstants.SESSION_EVENT.FATAL_ERROR, connectionHandler);
-  client.connect((code, event) => {
+  client.connect(async (code, event) => {
     const statusCode = code ? VoltConstants.STATUS_CODE_STRINGS[code] : 'SUCCESS';
     if (statusCode === 'SUCCESS') {
       logger.info(`Volt connection event=${event} status=${statusCode}`);
       clearInterval(pingInterval);
       pingInterval = setInterval(sendPing, pingTime);
+      await client.selectAvailableProcs();
       client.emit('open');
     } else {
       client.emit('error');

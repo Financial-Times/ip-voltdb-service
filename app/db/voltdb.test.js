@@ -1,8 +1,7 @@
-const operationsAPI = require('./api');
+const VoltClient = require('./Client');
 
 describe('Operations API', () => {
-  let operations;
-  const client = {};
+  let client;
 
   const procParamCounts = {
     proc1: 1,
@@ -19,34 +18,31 @@ describe('Operations API', () => {
   ];
 
   beforeEach(() => {
-    operations = operationsAPI(client);
+    client = new VoltClient();
+    client.filterAvailableProcs(procList, procParamCounts);
   });
 
   it('filters out procs that are not read only and more than one param', () => {
-    const available = operations.selectAvailableProcs(procList, procParamCounts);
-    for (const proc of available) {
+    expect(client.availableProcs.size).toBeGreaterThan(0);
+    for (const proc of client.availableProcs) {
       const found = procList.find(p => p.PROCEDURE_NAME === proc[0]);
       expect(JSON.parse(found.REMARKS).readOnly).toBeTruthy();
       expect(procParamCounts[proc[0]]).toBe(1);
     }
   });
 
-  it('calls an available procedure', async () => {
+  it('calls a procedure', async () => {
     const result = 'Hello, world!';
     client.callProcedure = (query, cb) => {
       cb(null, null, result);
     };
-    await expect(operations.callProcedure('proc1')).resolves.toBe(result);
-  });
-
-  it('does not call an unavailable procedure', async () => {
-    await expect(operations.callProcedure('proc2')).rejects.toBeDefined();
+    await expect(client.execProc('proc1')).resolves.toBe(result);
   });
 
   it('returns an error if query params set incorrectly', async () => {
     client.callProcedure = () => {
       throw new Error('problem');
     };
-    await expect(operations.callProcedure('proc1', [1, 2])).rejects.toBeDefined();
+    await expect(client.execProc('proc1', [1, 2])).rejects.toBeDefined();
   });
 });

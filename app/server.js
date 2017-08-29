@@ -1,14 +1,13 @@
 require('dotenv').config({ silent: true });
 
 const Express = require('express');
-const bodyParser = require('body-parser');
 const config = require('../config');
 const logger = require('./logger');
 const authenticate = require('./middleware/authenticate');
 const ensureHttps = require('./middleware/ensureHttps');
 const { notFound, errorHandler } = require('./middleware/errors');
-const { client, doConnection } = require('./voltdb');
-const operations = require('./operations/api')(client);
+const { client, doConnection } = require('./db/voltdb');
+const queries = require('./queries/api');
 
 const app = new Express();
 let server;
@@ -56,33 +55,13 @@ if (config.NODE_ENV === 'production') {
   app.use(ensureHttps);
 }
 app.use(authenticate);
-app.use(bodyParser.json({}));
-
-app.get('/queries', (req, res) => {
-  res.json(operations.getAvailableProcs());
-});
-
-app.post('/executions', async (req, res) => {
-  const proc = req.body.proc;
-  const params = req.body.params;
-  let data;
-  try {
-    data = await operations.callProcedure(proc, params);
-    // data = await operations.callAdhoc();
-  } catch (err) {
-    logger.error(err);
-    res.status(400).json({ message: err.message });
-    return;
-  }
-  res.json(data.table);
-});
+app.use('/api', queries(client));
 
 app.use(notFound);
 app.use(errorHandler);
 
 client.on('error', gracefulExit);
 client.once('open', async () => {
-  await operations.init();
   server = app.listen(config.port, (serverErr) => {
     if (serverErr) {
       logger.error('Error binding network socket. Exiting');
