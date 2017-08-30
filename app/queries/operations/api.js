@@ -1,8 +1,10 @@
 const VoltProcedure = require('voltjs/lib/query');
 const sqlString = require('sqlstring');
-//const queryVars = require('../../utils/lodashVarFinder');
+const mapValues = require('lodash/mapValues');
+// const queryVars = require('../../utils/lodashVarFinder');
 const template = require('lodash/template');
 
+const adhocProc = new VoltProcedure('@AdHoc', ['string']);
 const queryList = [{ name: 'test', query: 'select * from user_preferences where user_uuid=<%= id %>' }];
 
 const adHocQueries = new Map();
@@ -13,14 +15,8 @@ for (const query of Object.keys(queryList)) {
   });
 }
 
-const adhocProc = new VoltProcedure('@AdHoc', ['string']);
-
 function sanitizeParams(params) {
-  const sanitized = {};
-  for (const param of Object.keys(params)) {
-    sanitized[param] = sqlString.escape(params[param]);
-  }
-  return sanitized;
+  return mapValues(params, param => sqlString.escape(param));
 }
 
 module.exports = (client) => {
@@ -29,7 +25,7 @@ module.exports = (client) => {
       return [...client.availableProcs.keys()];
     },
 
-    callAdhoc(queryName, params) {
+    callAdhoc(queryName, params = {}) {
       const foundQuery = adHocQueries.get(queryName);
       if (foundQuery) {
         const sanitized = [foundQuery(sanitizeParams(params))];
