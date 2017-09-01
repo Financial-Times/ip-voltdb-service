@@ -1,4 +1,4 @@
-module.exports = (jsonObjs) => {
+module.exports = (jsonObjs = []) => {
   return jsonObjs.map((obj) => {
     const parsedObj = Object.assign({}, obj);
     for (const key of Object.keys(parsedObj)) {
