@@ -53,9 +53,15 @@ function doConnection() {
       logger.info(`Volt connection event=${event} status=${statusCode}`);
       clearInterval(pingInterval);
       pingInterval = setInterval(sendPing, pingTime);
-      await client.selectAvailableProcs();
-      client.emit('open');
+      try {
+        await client.selectAvailableProcs();
+        client.emit('open');
+      } catch (err) {
+        logger.error(`Could not get available procs - ${err}`);
+        client.emit('error');
+      }
     } else {
+      logger.error(`Could not connect ${statusCode}`);
       client.emit('error');
     }
   });
