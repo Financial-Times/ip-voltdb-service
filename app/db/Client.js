@@ -52,8 +52,6 @@ class Client extends VoltClient {
       this.execProc(procQuery),
       this.execProc(procColumnsQuery)
     ]);
-    console.log(procs);
-    console.log(procCols);
     // Select read only, single param procs
     return this.filterAvailableProcs(procs.table[0], countProcParams(procCols.table[0]));
     // TODO Get more information on proc inputs
