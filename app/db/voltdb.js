@@ -15,7 +15,7 @@ function getVoltConfig() {
   conf.password = config.voltPassword;
   conf.service = 'database';
   conf.messageQueueSize = 0;
-  conf.queryTimeout = 1000;
+  conf.queryTimeout = 10000;
   conf.queryTimeoutInterval = 1000;
   conf.flushInterval = 10;
   conf.reconnect = true;
