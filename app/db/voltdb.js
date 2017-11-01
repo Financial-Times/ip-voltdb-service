@@ -55,6 +55,9 @@ function doConnection() {
       pingInterval = setInterval(sendPing, pingTime);
       try {
         await client.selectAvailableProcs();
+        if (!client.availableProcs.size) {
+          throw new Error();
+        }
         client.emit('open');
       } catch (err) {
         logger.error(`Could not get available procs - ${err}`);
