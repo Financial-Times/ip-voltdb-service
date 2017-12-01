@@ -18,14 +18,14 @@
   },
   "homepage": "https://github.com/Financial-Times/ip-voltdb-service#readme",
   "dependencies": {
+    "@financial-times/n-logger": "^5.5.7",
     "body-parser": "^1.17.2",
     "compression": "^1.7.0",
     "dotenv": "^4.0.0",
     "express": "^4.15.4",
     "forwarded": "^0.1.2",
     "fresh": "^0.5.2",
-    "voltjs": "github:snozza/voltdb-client-nodejs",
-    "winston": "^2.3.1"
+    "voltjs": "github:snozza/voltdb-client-nodejs"
   },
   "devDependencies": {
     "eslint": "^4.4.1",
