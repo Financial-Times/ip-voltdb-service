@@ -3,9 +3,20 @@ const VoltProcedure = require('voltjs/lib/query');
 
 const systemCatalogProc = new VoltProcedure('@SystemCatalog', ['string']);
 
-function countProcParams(procCols) {
+const typeMapping = {
+  VARCHAR: 'string',
+  TINYINT: 'short',
+  BIGINT: 'int'
+};
+
+function compileProcParams(procCols) {
   return procCols.reduce((seen, proc) => {
-    seen[proc.PROCEDURE_NAME] = (seen[proc.PROCEDURE_NAME] || 0) + 1;
+    const varType = typeMapping[proc.TYPE_NAME] || 'string';
+    if (seen[proc.PROCEDURE_NAME]) {
+      seen[proc.PROCEDURE_NAME].push(varType);
+    } else {
+      seen[proc.PROCEDURE_NAME] = [varType];
+    }
     return seen;
   }, {});
 }
@@ -30,15 +41,11 @@ class Client extends VoltClient {
     });
   }
 
-  filterAvailableProcs(procs, procParamCounts) {
+  filterAvailableProcs(procs, procParams) {
     procs.forEach((proc) => {
-      const remarks = JSON.parse(proc.REMARKS);
-      // Only use read only, single key, user defined procedures
-      if (remarks.readOnly && !proc.PROCEDURE_NAME.includes('.select') &&
-        procParamCounts[proc.PROCEDURE_NAME] === 1) {
-        this.availableProcs.set(proc.PROCEDURE_NAME,
-          new VoltProcedure(proc.PROCEDURE_NAME, ['string']));
-      }
+      // user defined procedures
+      this.availableProcs.set(proc.PROCEDURE_NAME,
+        new VoltProcedure(proc.PROCEDURE_NAME, procParams[proc.PROCEDURE_NAME]));
     });
   }
 
@@ -53,7 +60,7 @@ class Client extends VoltClient {
       this.execProc(procColumnsQuery)
     ]);
     // Select read only, single param procs
-    return this.filterAvailableProcs(procs.table[0], countProcParams(procCols.table[0]));
+    return this.filterAvailableProcs(procs.table[0], compileProcParams(procCols.table[0]));
     // TODO Get more information on proc inputs
   }
 }
