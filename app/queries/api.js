@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bodyParser = require('body-parser');
 const operationsAPI = require('./operations/api');
 const parseJSON = require('../utils/parseJSON');
+const logger = require('../logger');
 
 module.exports = (client) => {
   const operations = operationsAPI(client);
@@ -19,6 +20,7 @@ module.exports = (client) => {
       data = await operations.callProcedure(proc, params);
       // data = await operations.callAdhoc();
     } catch (err) {
+      logger.error(err);
       res.status(400).json({ message: err.message });
       return;
     }
