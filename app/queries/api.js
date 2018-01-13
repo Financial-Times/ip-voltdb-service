@@ -24,7 +24,7 @@ module.exports = (client) => {
       res.status(400).json({ message: err.message });
       return;
     }
-    res.json(parseJSON(data.table[0]));
+    res.json(data.table.length ? parseJSON(data.table[0]) : {});
   });
 
   return router;
