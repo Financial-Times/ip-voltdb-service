@@ -30,8 +30,10 @@ module.exports = (client) => {
         const query = foundProc.getQuery();
         query.setParameters(params);
         return client.execProc(query);
+      } else {
+        return this.callAdhoc(proc, params);
       }
-      return Promise.reject(new Error('Query not available'));
+      //return Promise.reject(new Error('Query not available'));
     }
   };
 };
