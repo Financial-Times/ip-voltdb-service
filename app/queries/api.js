@@ -8,17 +8,26 @@ module.exports = (client) => {
   const operations = operationsAPI(client);
   router.use(bodyParser.json({}));
 
+  router.get('/test/:test', (req, res) => {
+    console.log(req.path);
+    res.json(operations.getAvailableProcs());
+  });
+
   router.get('/queries', (req, res) => {
     res.json(operations.getAvailableProcs());
   });
 
   router.post('/executions', async (req, res) => {
-    const proc = req.body.proc;
-    const params = req.body.params;
+    const { proc, params, adhoc } = req.body;
     let data;
     try {
-      data = await operations.callProcedure(proc, params);
-      // data = await operations.callAdhoc();
+      if (adhoc) {
+        // don't open this up to random input yet (currently only entityId is
+        // received from envoy - hard coded. This is not sanitized.
+        data = await operations.callAdhoc(proc, params);
+      } else {
+        data = await operations.callProcedure(proc, params);
+      }
     } catch (err) {
       logger.error(err);
       res.status(400).json({ message: err.message });

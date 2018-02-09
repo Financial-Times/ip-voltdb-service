@@ -12,7 +12,6 @@ const app = new Express();
 if (config.NODE_ENV === 'production') {
   app.use(ensureHttps);
 }
-app.use(authenticate);
 app.use(compression());
 app.use('/api', queries(client));
 

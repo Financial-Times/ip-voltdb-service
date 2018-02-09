@@ -1,6 +1,10 @@
 const VoltProcedure = require('voltjs/lib/query');
 
 const adhocProc = new VoltProcedure('@AdHoc', ['string']);
+// TODO create stored procedure in Volt and remove adhoc procs
+const adhocProcs = {
+  userPageViews: (entityId) => [`select url_href, product from page_views where user_uuid = '${entityId}'`]
+};
 
 module.exports = (client) => {
   return {
@@ -8,10 +12,15 @@ module.exports = (client) => {
       return [...client.availableProcs.keys()];
     },
 
-    callAdhoc() {
+    callAdhoc(proc, params) {
       const query = adhocProc.getQuery();
-      // Won't make this a real method until we sanitize input
-      query.setParameters(['select top 5 * from user_preferences']);
+      // TODO Sanitize input - for now just accepted hard coded entityId from
+      // envoy
+      const selectedProc = adhocProcs[proc];
+      if (!selectedProc) {
+        throw new Error('Proc does not exist');
+      }
+      query.setParameters(selectedProc(params[0]));
       return client.execProc(query);
     },
 
