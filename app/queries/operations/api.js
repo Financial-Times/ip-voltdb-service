@@ -3,9 +3,9 @@ const VoltProcedure = require('voltjs/lib/query');
 const adhocProc = new VoltProcedure('@AdHoc', ['string']);
 // TODO create stored procedure in Volt and remove adhoc procs
 const adhocProcs = {
-  userPageViews: (entityId) => {
-    return [`select url_href from page_views where user_uuid = '${entityId}'
-    and url_href like '%' order by activity_time desc`];
+  signupViews: (deviceId) => {
+    return [`select top 1 * from page_views where device_spoor_id = '${deviceId}'
+    and app = 'signup' and url_href like '%signup?%' order by activity_time desc`];
   }
 };
 
