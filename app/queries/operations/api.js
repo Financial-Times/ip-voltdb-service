@@ -5,7 +5,7 @@ const adhocProc = new VoltProcedure('@AdHoc', ['string']);
 const adhocProcs = {
   signupViews: (deviceId) => {
     return [`select top 1 * from page_views where device_spoor_id = '${deviceId}'
-    and app = 'signup' and url_href like '%signup?%' order by activity_time desc`];
+    and app = 'signup' order by activity_time desc`];
   }
 };
 
