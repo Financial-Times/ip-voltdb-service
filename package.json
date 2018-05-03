@@ -4,6 +4,8 @@
   "description": "",
   "main": "voltdb.js",
   "scripts": {
+    "precommit": "secret-squirrel",
+    "commitmsg": "secret-squirrel-commitmsg",
     "start": "node ./app/server.js",
     "test": "./bin/test.sh"
   },
@@ -28,9 +30,11 @@
     "voltjs": "github:snozza/voltdb-client-nodejs"
   },
   "devDependencies": {
+    "@financial-times/secret-squirrel": "^2.8.0",
     "eslint": "^4.4.1",
     "eslint-config-airbnb-base": "^11.3.1",
     "eslint-plugin-import": "^2.7.0",
+    "husky": "^0.14.3",
     "jest": "^20.0.4"
   },
   "engines": {

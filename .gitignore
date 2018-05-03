@@ -60,3 +60,4 @@ typings/
 # other
 app.properties
 
+.idea/
