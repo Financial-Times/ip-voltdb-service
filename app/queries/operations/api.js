@@ -17,13 +17,7 @@ module.exports = (client) => {
 
     callAdhoc(proc, params) {
       const query = adhocProc.getQuery();
-      // TODO Sanitize input - for now just accepted hard coded entityId from
-      // envoy
-      const selectedProc = adhocProcs[proc];
-      if (!selectedProc) {
-        throw new Error('Proc does not exist');
-      }
-      query.setParameters(selectedProc(params[0]));
+      query.setParameters([params[0]]);
       return client.execProc(query);
     },
 
