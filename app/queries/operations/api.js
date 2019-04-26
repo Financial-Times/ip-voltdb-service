@@ -1,13 +1,6 @@
 const VoltProcedure = require('voltjs/lib/query');
 
 const adhocProc = new VoltProcedure('@AdHoc', ['string']);
-// TODO create stored procedure in Volt and remove adhoc procs
-const adhocProcs = {
-  signupViews: (deviceId) => {
-    return [`select top 1 * from page_views where device_spoor_id = '${deviceId}'
-    order by activity_time desc`];
-  }
-};
 
 module.exports = (client) => {
   return {
