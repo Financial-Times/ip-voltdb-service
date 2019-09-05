@@ -15,6 +15,7 @@ module.exports = (client) => {
   router.post('/executions', async (req, res) => {
     const { proc, params } = req.body;
     let data;
+    console.log('Request', proc, params);
     try {
       data = await operations.callProcedure(proc, params);
     } catch (err) {
