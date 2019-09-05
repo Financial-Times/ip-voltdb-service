@@ -23,7 +23,7 @@ module.exports = (client) => {
       res.status(400).json({ message: err.message });
       return;
     }
-    res.json(data.table.length ? parseJSON(data.table) : {});
+    res.json((data.table && data.table.length) ? parseJSON(data.table) : {});
   });
 
   return router;
