@@ -25,6 +25,7 @@
     "express": "^4.15.4",
     "forwarded": "^0.1.2",
     "fresh": "^0.5.2",
+    "next-metrics": "^3.1.13",
     "voltjs": "github:snozza/voltdb-client-nodejs"
   },
   "devDependencies": {

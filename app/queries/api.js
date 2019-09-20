@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const bodyParser = require('body-parser');
+const metrics = require('next-metrics');
 const operationsAPI = require('./operations/api');
 const parseJSON = require('../utils/parseJSON');
 const logger = require('../logger');
@@ -17,6 +18,7 @@ module.exports = (client) => {
     let data;
     console.log('Request', proc, params);
     try {
+      metrics.count('fetch.voltdbservice.called');
       data = await operations.callProcedure(proc, params);
     } catch (err) {
       logger.error(err);
