@@ -21,7 +21,7 @@ module.exports = (client) => {
     try {
       metrics.count('fetch.voltdbservice.called');  // How many times the procedure called
       data = await operations.callProcedure(proc, params);
-      metrics.histogram('metric.to.count.time', (new Date() - startingTime)/1000); // Latency in seconds, individual call basis 
+      metrics.histogram('metric.to.count.time', new Date() - startingTime); // Latency, individual call basis 
 
     } catch (err) {
       logger.error(err);
